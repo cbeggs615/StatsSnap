@@ -8,17 +8,17 @@
         "type": "tabs",
         "children": [
           {
-            "id": "1ca357af05ba7a81",
+            "id": "36718650825ca2fb",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "design/concepts/ItemTracking/implementation.md",
+                "file": "context/design/concepts/SportsStats/testing.md/20251016_231112.b7059864.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "implementation"
+              "title": "20251016_231112.b7059864"
             }
           },
           {
@@ -27,12 +27,26 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "design/background/implementing-concepts.md",
+                "file": "README.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "implementing-concepts"
+              "title": "README"
+            }
+          },
+          {
+            "id": "f13b0bf1e926e168",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "context/design/concepts/PasswordAuth/implementation.md/20251016_213050.9707f256.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "20251016_213050.9707f256"
             }
           },
           {
@@ -49,7 +63,8 @@
               "title": "implementation"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -197,43 +212,43 @@
       "bases:Create new base": false
     }
   },
-  "active": "1ca357af05ba7a81",
+  "active": "0ebf1bbc8b5a81c3",
   "lastOpenFiles": [
-    "design/concepts/ItemTracking/ItemTracking.md",
-    "design/concepts/ItemTracking/design-notes.md",
     "design/concepts/design-as-a-whole.md",
-    "design/concepts/ItemTracking/Untitled.md",
-    "design/concepts/ItemTracking/testing.md",
-    "context/design/concepts/ItemTracking/testing.md/20251016_205437.95ecaf67.md",
-    "context/design/concepts/ItemTracking/testing.md/steps/prompt.9214f1db.md",
-    "design/background/testing-concepts.md",
-    "design/background/implementing-concepts.md",
-    "design/concepts/ItemTracking/implementation.md",
-    "design/concepts/SportsStats/console-output.md",
-    "design/concepts/PasswordAuth/console-output.md",
-    "design/concepts/ItemTracking/console-output.md",
-    "context/design/concepts/ItemTracking/testing.md/20251016_140155.206933ef.md",
-    "context/design/concepts/ItemTracking/testing.md/steps/response.b68c68f2.md",
-    "context/design/concepts/ItemTracking/testing.md/20251016_140105.f177ff24.md",
-    "context/design/concepts/ItemTracking/testing.md/steps/response.6d76b65d.md",
-    "context/design/concepts/ItemTracking/testing.md/20251016_140022.64c2d956.md",
-    "context/design/concepts/ItemTracking/testing.md/steps/prompt.ce92730c.md",
-    "context/design/concepts/ItemTracking/testing.md/steps/file.2fb84820.md",
-    "design/concepts/PasswordAuth/testing.md",
-    "design/concepts/StreamedEvents/console-output.md",
+    "design/concepts/StreamedEvents/design-notes.md",
+    "design/concepts/SportsStats/design-notes.md",
+    "design/concepts/ItemTracking/design-notes.md",
+    "design/concepts/PasswordAuth/design-notes.md",
     "design/concepts/PasswordAuth/implementation.md",
-    "design/brainstorming/questioning.md",
-    "design/concepts/PasswordAuth/PasswordAuth.md",
+    "design/concepts/ItemTracking/implementation.md",
+    "design/concepts/ItemTracking/console-output.md",
+    "design/background/concept-specifications.md",
+    "context/design/concepts/PasswordAuth/testing.md/20251014_105001.f2c2a96d.md",
+    "context/design/concepts/SportsStats/testing.md/20251016_231112.b7059864.md",
+    "context/design/concepts/StreamedEvents/implementation.md/20251019_103834.3ea001e9.md",
+    "context/design/concepts/SportsStats/testing.md/20251016_234213.933ce007.md",
+    "design/concepts/SportsStats/SportsStats.md",
     "design/concepts/SportsStats/implementation.md",
+    "design/concepts/StreamedEvents/testing.md",
+    "context/design/concepts/StreamedEvents/implementation.md/20251019_104909.eff660d6.md",
+    "context/design/concepts/StreamedEvents/implementation.md/20251015_133630.2b4b96ea.md",
+    "context/design/concepts/StreamedEvents/implementation.md/20251019_103759.1b16750e.md",
+    "steps/response.48b1e7c3.md",
+    "steps",
+    "design/background/concept-design-overview.md",
+    "design/concepts/StreamedEvents/implementation.md",
+    "context/design/concepts/ItemTracking/implementation.md/20251019_104746.0a515d78.md",
+    "design/concepts/ItemTracking/ItemTracking.md",
+    "context/design/concepts/StreamedEvents/implementation.md/20251015_133541.83b9b141.md",
+    "context/design/concepts/StreamedEvents/implementation.md/steps/response.f7602fcc.md",
+    "context/design/concepts/SportsStats/testing.md/steps",
+    "context/design/concepts/StreamedEvents/testing.md/steps",
     "src/concepts/SportsStats/SportsStatsConcept.test.ts",
     "src/concepts/SportsStats/SportsStatsConcept.ts",
     "src/concepts/SportsStats",
     "context/design/concepts/SportsStats/implementation.md/steps",
     "context/design/concepts/SportsStats",
     "design/concepts/SportsStats",
-    "src/concepts/StreamedEvents/StreamedEventsConcept.ts",
-    "src/concepts/StreamedEvents/StreamedEventsConcept.test.ts",
-    "src/concepts/StreamedEvents",
-    "context/design/concepts/StreamedEvents/implementation.md/steps"
+    "src/concepts/StreamedEvents/StreamedEventsConcept.ts"
   ]
 }
