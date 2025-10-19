@@ -1,0 +1,6 @@
+I largely kept the design of StreamedEvents the same, as it already maintained good modularity and clarity. The main change I made was adapting it for compatibility with MongoDB, consistent with my other concept implementations.
+
+The implementation closely follows the original specification, representing items and their associated events using two MongoDB collections. Each item stores a set of event IDs, and each event record includes its name, date, and access link. The actions fully support the concept’s lifecycle—adding, associating, editing, and removing events—while enforcing preconditions and maintaining consistency. Additional query functions were included to support testing and validation, and `$addToSet` was used to prevent duplicate associations.
+
+For testing, I initially wrote the suite without using context since I had encountered difficulties with it in PasswordAuth and ItemTracking. Once I had a working test set, I used context to refine it so that it better represented realistic traces and variants of the concept. After a few iterations and small adjustments, the final tests effectively covered all major actions and error scenarios. I also chose to keep the output simple—printing descriptive test messages to the console, with more detailed information shown only when a part of a test fails.
+

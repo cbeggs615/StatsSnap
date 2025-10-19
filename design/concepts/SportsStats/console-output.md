@@ -1,0 +1,5 @@
+Principle: SportsStats 1. Sport defines key stats, team inherits and maintains values ... ok (976ms)
+Sports Stats 2. Dynamic key stat changes immediately affect team stat visibility ... ok (918ms)
+SportsStats 3: Data isolation across sports prevents cross-contamination ... ok (1s)
+SportsStats 4: Deletion enforces preconditions and cascades cleanup ... ok (934ms)
+SportsStats 5: Comprehensive error handling for invalid or duplicate operations ... ok (943ms)

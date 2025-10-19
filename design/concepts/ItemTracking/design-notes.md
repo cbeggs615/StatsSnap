@@ -1,0 +1,5 @@
+I kept the specification for ItemTracking consistent with my Assignment 2 version, making only minor adjustments to fix earlier misunderstandings and ensure consistent notation (for example, changing the default parameter from _Items_ to _Item_). 
+
+For the implementation, I used the generated context as a foundation and then made manual edits to ensure the concept behaved as expected. Also, during implementation was where I (with context) could make the queries that could find the items tracked by a user and also find which users currently track an item.
+
+Testing was more challenging. I initially had trouble getting context to generate valid Deno test cases. I revised those tests manually, with some assistance from another LLM, before realizing I wanted them to better represent realistic user journeys. In that stage, context was especially useful for structuring those scenario-based tests.
