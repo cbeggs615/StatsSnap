@@ -37,9 +37,9 @@ Sometimes the purpose is subtle. For example, here is the purpose of the *Paragr
 This purpose is fulfilled by maintaining an association between paragraphs and their styles in the state, so that a change to a paragraph style causes an update to the format of every associated paragraph. You might have thought that the purpose is to allow you to apply a predefined format to a paragraph, and indeed this purpose is fulfilled too. But it is not the defining purpose, because that simpler purpose is fulfilled by a more basic concept that just holds a set of styles with their formats and does not maintain any association between paragraphs and styles.
 
 A good purpose should satisfy these criteria:
-- **Need-focused**. The purpose should be stated in terms of the needs of the user. For example, the purpose of the _Upvote_ concept should not be to “express your approval of an item” since that has no tangible benefit; a better purpose might be to “use crowd-sourced approval to rank items.”
-- **Specific**. The purpose should be specific to the design of the concept at hand. For example, even though an _Autocomplete_ concept in Gmail may make the app more attractive to consumers, it wouldn’t be useful to say that its purpose is to “increase the Gmail user base” since presumably all concepts have that goal. A better purpose might be “to save the user typing effort.”
-- **Evaluable**. A purpose should be a yardstick against which to measure a concept design. For example, a good purpose for the _Trash_ concept is “to allow undeletion.” The apparently similar purpose “to prevent accidental deletion” is not good because evaluating the concept design against that goal would require all kinds of assumptions about user behavior.
+- **Need-focused**. The purpose should be stated in terms of the needs of the user. For example, the purpose of the _Upvote_ concept should not be to “express your approval of an item” since that has no tangible benefit; a better purpose might be to “use crowd-sourced approval to rank items.”
+- **Specific**. The purpose should be specific to the design of the concept at hand. For example, even though an _Autocomplete_ concept in Gmail may make the app more attractive to consumers, it wouldn’t be useful to say that its purpose is to “increase the Gmail user base” since presumably all concepts have that goal. A better purpose might be “to save the user typing effort.”
+- **Evaluable**. A purpose should be a yardstick against which to measure a concept design. For example, a good purpose for the _Trash_ concept is “to allow undeletion.” The apparently similar purpose “to prevent accidental deletion” is not good because evaluating the concept design against that goal would require all kinds of assumptions about user behavior.
 
 ## Concept principle
 
@@ -49,7 +49,7 @@ A compelling way to explain how something works is to tell a story. Not any stor
 
 - The Minuteman Library Network, for example, offers a wonderful service. If I request a book, then when it becomes available at my local library, I get an email notifying me that it’s ready to be picked up.
 
-Note the form this scenario takes: _if_ you perform some actions, _then_ some result occurs that fulfills a useful purpose. Many kinds of mechanism can be described in this way:
+Note the form this scenario takes: _if_ you perform some actions, _then_ some result occurs that fulfills a useful purpose. Many kinds of mechanism can be described in this way:
 
 - If you make social security payments every month while you work, then you will receive a basic income from the government after you retire.
 - If you insert a slice of bread into the toaster and press down the lever, then a few minutes later the lever will pop up and your bread will be toast.
@@ -73,7 +73,7 @@ A good principle should satisfy these criteria:
 
 ## Concept state
 
-The concept state is a data model that represents the set of possible states of the executing concept. For example, a concept for authenticating users might have a state declared like this: 
+The concept state is a data model that represents the set of possible states of the executing concept. For example, a concept for authenticating users might have a state declared like this:
 
 	a set of Users with
 	  a username String
@@ -136,7 +136,7 @@ because the non-error case (implicitly) returns an empty dictionary. Since syncs
 
 ### Pre and post conditions
 
-The detailed behavior of each action is specified in classical pre/post form. The precondition, labeled with the keyword *requires*, specifies the conditions under which execution is allowed, as a constraint on the state and the input arguments. The postcondition, labeled with the keyword *effects*, specifies the outcome (the results and the new state) as a constraint on the inputs, state before, state after and the outputs. 
+The detailed behavior of each action is specified in classical pre/post form. The precondition, labeled with the keyword *requires*, specifies the conditions under which execution is allowed, as a constraint on the state and the input arguments. The postcondition, labeled with the keyword *effects*, specifies the outcome (the results and the new state) as a constraint on the inputs, state before, state after and the outputs.
 
 For example, here is a specification of a *Counter* concept:
 
@@ -147,23 +147,23 @@ For example, here is a specification of a *Counter* concept:
 **principle** after a series of increments, the counter reflects the number of increments that occurred
 
 **state**
-  count: Number = 0
-    
-**actions**
-  increment ()
-    **requires** true
-    **effects** count := count + 1
+  count: Number = 0
 
-  decrement ()
-    **requires** count > 0
-    **effects** count := count - 1 
-  
-  reset ()
-    **requires** true
-    **effects** count := 0
+**actions**
+  increment ()
+    **requires** true
+    **effects** count := count + 1
+
+  decrement ()
+    **requires** count > 0
+    **effects** count := count - 1
+
+  reset ()
+    **requires** true
+    **effects** count := 0
 
 Notes:
-- Most of the preconditions are true: that means the action can always happen. 
+- Most of the preconditions are true: that means the action can always happen.
 - The postconditions are written as assignments, but they could also be written informally. For example, the postcondition of increment might say "add one to the count". It is also possible to adopt a more declarative style and write "the count after is one more than the count before".
 
 In general, action specifications are written informally and assume frame conditions (that any state component not mentioned is not updated).
@@ -180,50 +180,72 @@ Note that the precondition allows the action to happen any time after the timer 
 
 ### Preconditions are firing conditions
 
-The pre/post specification idiom is conventional and is the same one that is used in many specification languages. Note however that in most of those languages the precondition is an *obligation* on the caller. That means that the action *can* be executed when the precondition is false, but that the outcome will be uncertain. 
+The pre/post specification idiom is conventional and is the same one that is used in many specification languages. Note however that in most of those languages the precondition is an *obligation* on the caller. That means that the action *can* be executed when the precondition is false, but that the outcome will be uncertain.
 
 In concept specs, in contrast, *preconditions are firing conditions*. This means that an action can never occur when its precondition is false. For system actions, the precondition indicates when they should occur.
 
 ## Concept queries
 
-Queries are reads of the concept state. Explicit query specifications are often not required since the concept state is assumed to be visible, so that straightforward queries of the state do not need to be defined in advance. It can be useful, though, to define queries for particularly significant and non-trivial observations of the state. For example, for a *UserProfile* concept with this state
+Queries are reads of the concept state. Explicit query specifications are often not used at the design level, but in specifications of concepts for code all queries that are likely to be needed should be specified.
+For example, for a *UserProfile* concept with this state
 
 	a set of Users with
-	  a bio String
-	  a thumbnail Image
+	  a username String
+	  a password String
 
-one would not define a query to extract the bio of a user. But for a *Friend* concept with this state
+one could define queries to extract the username and password of a user:
 
-	a set of Users with
-	  a friends set of Users
+**queries**
+	\_getUsername (user: User) : (username: String)
+    **requires** user exists
+    **effects** returns username of user
 
-one might define a query that tells you, given two users, how many mutual friends they have:
+	\_getPassword (user: User) : (password: String)
+    **requires** user exists
+    **effects** returns password of user
 
-  \_countMutualFriends (u1: User, u2: User): (count: Number)
-  **effects** return number of mutual friends of users u1 and u2
+Some queries return multiple objects. For example, groups contain sets of users
+
+	a set of Groups with
+	  a users set of User
+
+then a query could take a group and return the set of users in it:
+
+**queries**
+	\_getUsers (group: Group) : (user: User)
+    **requires** group exists
+    **effects** returns set of all users in the group
+
+Note that queries, unlike actions, can return structured objects. For example, given the definitions of users and groups above, we could define a query
+
+	\_getUsersWithUsernamesAndPasswords (group: Group) : (user: {username: String, password: String})
+    **requires** group exists
+    **effects** returns set of all users in the group each with its username and password
+
+that returns a set of users, each with a username and password property.
 
 ## Concepts are not objects
 
 A common misconception is that concepts are the same as objects in object-oriented programming. Here are the key differences:
 - A concept holds in its state the set of all objects that are involved in the behavioral concern that it embodies, rather than the properties of a single object.
-- The specification of a concept therefore has no constructor, and objects are allocated with actions instead. 
+- The specification of a concept therefore has no constructor, and objects are allocated with actions instead.
 - A concept must embody all the functionality associated with a behavioral concern, unlike objects which often depend on other objects for their functioning.
 - Concepts separate concerns, unlike objects in object oriented programming which tend to aggregate all properties and methods associated with a class of object.
 
-To illustrate these differences, consider the functionality of associating labels with items and then retrieving the items that match a given label. This functionality is used in Gmail for organizing email messages for example. In an object-oriented design, one might have an *EmailMessage* class that has an instance variable holding an array of labels; a Label *class* that has an instance variable holding the string name of the label; and a *Mailbox* class  that has an instance variable holding an array of *EmailMessage* objects. 
+To illustrate these differences, consider the functionality of associating labels with items and then retrieving the items that match a given label. This functionality is used in Gmail for organizing email messages for example. In an object-oriented design, one might have an *EmailMessage* class that has an instance variable holding an array of labels; a Label *class* that has an instance variable holding the string name of the label; and a *Mailbox* class  that has an instance variable holding an array of *EmailMessage* objects.
 
 In contrast, in concept design, we would have a single concept called *Labeling* for example whose state is a mapping from generic items to sets of labels:
 
 **concept** Labeling \[Item\]
 **state**
-  a set of Items with
-    a labels set of Label
-  a set of Labels with
-    a name String
+  a set of Items with
+    a labels set of Label
+  a set of Labels with
+    a name String
 **actions**
   createLabel (name: String)
-  addLabel (item: Item, label: Label)
-  deleteLabel (item: Item, label: Label)
+  addLabel (item: Item, label: Label)
+  deleteLabel (item: Item, label: Label)
 
 Note:
 - The *Labeling* concept includes in its state the entire collection of items that are labeled (the state component is in fact just a relation from items to labels)
