@@ -1,3 +1,42 @@
+---
+timestamp: 'Mon Oct 20 2025 13:19:08 GMT-0400 (Eastern Daylight Time)'
+parent: '[[../20251020_131908.731088dd.md]]'
+content_id: 4bc227b416d00b607d4b884f6b39e8bca12a7da1ff44c5158f61c232b17692cf
+---
+
+# concept: PasswordAuth
+
+**concept** PasswordAuth
+
+**purpose** enables users to securely identify themselves and manage their access through username and password credentials.
+
+**principle** If a user registers with a unique username and password, then they can later provide those same credentials to be authenticated as that user, thereby gaining access to associated functionality.
+
+**state**
+a set of Users with
+a username String
+a password String
+
+**actions**
+
+register (username: String, password: String): (user: User)
+**requires** no User currently exists with the given `username`.
+**effects** A new User is created, associated with the provided `username` and `password`. The identifier of this new `User` is returned.
+
+authenticate (username: String, password: String):
+**requires** A User exists whose `username` matches the input `username` and whose `password` matches the input `password`
+
+deleteAccount (username: String, password: String):
+**requires** A User exists whose `username` matches the input `username` and whose `password` matches the input `password`.
+**effects** The User associated with the given `username` is deleted, along with their `username` and `password` association.
+
+changePassword (username: String, currentPass: String, newPass: String):
+**requires** A User exists whose `username` matches the input `username` and whose `password` matches the `currentPass`.
+**effects** The `password` of the User associated with the given `username` is updated to `newPass`.
+
+```typescript
+// file: src/PasswordAuth/PasswordAuthConcept.ts
+
 import { Collection, Db } from "npm:mongodb";
 import { Empty, ID } from "@utils/types.ts";
 import { freshID } from "@utils/database.ts";
@@ -97,12 +136,6 @@ export default class PasswordAuthConcept {
 
     // Generate a unique salt for this user
     const salt = crypto.randomBytes(SALT_BYTE_LENGTH).toString("hex");
-
-    console.log("DEBUG register inputs:", { username, password });
-    if (!password || typeof password !== "string") {
-      console.error("Invalid password input:", password);
-      return { error: "Password is missing or invalid." };
-    }
 
     // Hash the password using PBKDF2 with the generated salt
     const hashedPassword = await hashPassword(password, salt);
@@ -333,3 +366,4 @@ export default class PasswordAuthConcept {
     return { error: "Invalid username or password." };
   }
 }
+```

@@ -38,7 +38,10 @@ function assertSuccess<SuccessType, ErrorType extends { error: string }>(
   actionResult: SuccessType | ErrorType,
   message = "Action should succeed",
 ): asserts actionResult is SuccessType {
-  if (typeof actionResult === "object" && actionResult !== null && "error" in actionResult) {
+  if (
+    typeof actionResult === "object" && actionResult !== null &&
+    "error" in actionResult
+  ) {
     const errorResult = actionResult as ErrorType;
     assertEquals(false, true, `${message}: ${errorResult.error}`);
   }
@@ -59,13 +62,20 @@ function assertFailure<SuccessType, ErrorType extends { error: string }>(
   message: string = "Action should fail with expected error",
 ): ErrorType {
   // Check if the result has the 'error' property and is not null/undefined
-  if (typeof actionResult === 'object' && actionResult !== null && 'error' in actionResult) {
+  if (
+    typeof actionResult === "object" && actionResult !== null &&
+    "error" in actionResult
+  ) {
     const errorResult = actionResult as ErrorType;
     assertEquals(errorResult.error, expectedErrorMessage, message);
     return errorResult; // Return the error result for potential further checks
   } else {
     // If no error, fail because an error was expected
-    assertEquals(true, false, `${message}: Expected an error, but action succeeded.`);
+    assertEquals(
+      true,
+      false,
+      `${message}: Expected an error, but action succeeded.`,
+    );
     // This line is technically unreachable if assertEquals(true, false) throws,
     // but it satisfies TS's return type for strictness.
     return {} as ErrorType;
@@ -147,8 +157,16 @@ Deno.test(
       );
       const { keyStatsData: fetchedLakersStats } = fetchLakersStatsResult;
 
-      assertEquals(fetchedLakersStats[STAT_POINTS], 115, "STAT_POINTS should match");
-      assertEquals(fetchedLakersStats[STAT_ASSISTS], 30, "STAT_ASSISTS should match");
+      assertEquals(
+        fetchedLakersStats[STAT_POINTS],
+        115,
+        "STAT_POINTS should match",
+      );
+      assertEquals(
+        fetchedLakersStats[STAT_ASSISTS],
+        30,
+        "STAT_ASSISTS should match",
+      );
       assertEquals(
         fetchedLakersStats[STAT_FOULS],
         undefined,
@@ -197,7 +215,6 @@ Deno.test(
     }
   },
 );
-
 
 Deno.test(
   "Sports Stats 2. Dynamic key stat changes immediately affect team stat visibility",
@@ -314,7 +331,6 @@ Deno.test(
   },
 );
 
-
 Deno.test(
   "SportsStats 3: Data isolation across sports prevents cross-contamination",
   async () => {
@@ -354,7 +370,6 @@ Deno.test(
         "set Lakers points",
       );
 
-
       // 2. Setup Baseball Sport and Phillies team (with a stat name that could overlap)
       const baseballSportResult = await stats.addSport({
         sportName: SPORT_BASEBALL_NAME,
@@ -388,7 +403,6 @@ Deno.test(
         "set Phillies runs",
       );
 
-
       // 3. Verify data isolation: Fetch Lakers stats, ensure no baseball stats are mixed in
       const lakersFetchedResult = await stats.fetchTeamStats({
         teamname: TEAM_LAKERS_NAME,
@@ -400,11 +414,19 @@ Deno.test(
       );
       const { keyStatsData: lakersFetchedStats } = lakersFetchedResult;
 
-      assertEquals(lakersFetchedStats[STAT_POINTS], 120, "Lakers points should be correct");
-      assertEquals(lakersFetchedStats[STAT_RUNS], undefined, "Lakers should not have baseball runs stat");
+      assertEquals(
+        lakersFetchedStats[STAT_POINTS],
+        120,
+        "Lakers points should be correct",
+      );
+      assertEquals(
+        lakersFetchedStats[STAT_RUNS],
+        undefined,
+        "Lakers should not have baseball runs stat",
+      );
 
       // 4. Verify data isolation: Fetch Phillies stats, ensure no basketball stats are mixed in
-     const philliesFetchedResult = await stats.fetchTeamStats({
+      const philliesFetchedResult = await stats.fetchTeamStats({
         teamname: TEAM_PHILLIES_NAME,
         sport: baseballSportId,
       });
@@ -413,14 +435,36 @@ Deno.test(
         "fetch Phillies stats",
       );
       const { keyStatsData: philliesFetchedStats } = philliesFetchedResult;
-      assertEquals(philliesFetchedStats[STAT_RUNS], 8, "Phillies runs should be correct");
-      assertEquals(philliesFetchedStats[STAT_POINTS], undefined, "Phillies should not have basketball points stat");
+      assertEquals(
+        philliesFetchedStats[STAT_RUNS],
+        8,
+        "Phillies runs should be correct",
+      );
+      assertEquals(
+        philliesFetchedStats[STAT_POINTS],
+        undefined,
+        "Phillies should not have basketball points stat",
+      );
 
       // Clean up
-      assertSuccess(await stats.removeTeam({ teamname: TEAM_LAKERS_NAME, sport: basketballSportId }));
-      assertSuccess(await stats.removeTeam({ teamname: TEAM_PHILLIES_NAME, sport: baseballSportId }));
-      assertSuccess(await stats.deleteSport({ sportName: SPORT_BASKETBALL_NAME }));
-      assertSuccess(await stats.deleteSport({ sportName: SPORT_BASEBALL_NAME }));
+      assertSuccess(
+        await stats.removeTeam({
+          teamname: TEAM_LAKERS_NAME,
+          sport: basketballSportId,
+        }),
+      );
+      assertSuccess(
+        await stats.removeTeam({
+          teamname: TEAM_PHILLIES_NAME,
+          sport: baseballSportId,
+        }),
+      );
+      assertSuccess(
+        await stats.deleteSport({ sportName: SPORT_BASKETBALL_NAME }),
+      );
+      assertSuccess(
+        await stats.deleteSport({ sportName: SPORT_BASEBALL_NAME }),
+      );
     } finally {
       await client.close();
     }
@@ -474,13 +518,19 @@ Deno.test(
 
       // Remove the team first (enabling sport deletion)
       assertSuccess(
-        await stats.removeTeam({ teamname: TEAM_PATRIOTS_NAME, sport: footballSportId }),
+        await stats.removeTeam({
+          teamname: TEAM_PATRIOTS_NAME,
+          sport: footballSportId,
+        }),
         "removeTeam for Patriots",
       );
 
       // Verify team's stats are also gone due to cascade (implicitly tested by removeTeam effects)
       assertFailure(
-        await stats.fetchTeamStats({ teamname: TEAM_PATRIOTS_NAME, sport: footballSportId }),
+        await stats.fetchTeamStats({
+          teamname: TEAM_PATRIOTS_NAME,
+          sport: footballSportId,
+        }),
         `TeamStats for team '${TEAM_PATRIOTS_NAME}' in sport '${footballSportId}' does not exist.`,
         "Fetching deleted team's stats should fail",
       );
@@ -489,8 +539,15 @@ Deno.test(
       const deleteSportAttempt2 = await stats.deleteSport({
         sportName: SPORT_FOOTBALL_NAME,
       });
-      assertSuccess<{ sport: ID }, { error: string }>(deleteSportAttempt2, "deleteSport for Football (after team removed)");
-      assertEquals(deleteSportAttempt2.sport, footballSportId, "Correct sport ID should be returned");
+      assertSuccess<{ sport: ID }, { error: string }>(
+        deleteSportAttempt2,
+        "deleteSport for Football (after team removed)",
+      );
+      assertEquals(
+        deleteSportAttempt2.sport,
+        footballSportId,
+        "Correct sport ID should be returned",
+      );
 
       // Verify the sport is truly gone by trying to re-add it
       const fetchSportAfterDelete = await stats.addSport({ // Try to re-add, should succeed if deleted
@@ -498,7 +555,10 @@ Deno.test(
         source: SOURCE_API_MLB,
         default: new Set(),
       });
-      assertSuccess(fetchSportAfterDelete, "Re-adding deleted sport should succeed.");
+      assertSuccess(
+        fetchSportAfterDelete,
+        "Re-adding deleted sport should succeed.",
+      );
     } finally {
       await client.close();
     }
@@ -513,7 +573,10 @@ Deno.test(
     try {
       // Test addTeam to a nonexistent sport
       assertFailure(
-        await stats.addTeam({ teamname: TEAM_NONEXISTENT_NAME, sport: "sport:bogus" as ID }),
+        await stats.addTeam({
+          teamname: TEAM_NONEXISTENT_NAME,
+          sport: "sport:bogus" as ID,
+        }),
         `Sport with ID 'sport:bogus' does not exist. Please add the sport first.`,
         "addTeam to nonexistent sport",
       );
@@ -524,37 +587,58 @@ Deno.test(
         source: SOURCE_API_MLB,
         default: new Set([STAT_RUNS]),
       });
-      assertSuccess<{ sport: ID }, { error: string }>(sportResult, "add Cricket sport");
+      assertSuccess<{ sport: ID }, { error: string }>(
+        sportResult,
+        "add Cricket sport",
+      );
       const { sport: cricketSportId } = sportResult;
 
-      const teamResult = await stats.addTeam({ teamname: TEAM_INDIA_NAME, sport: cricketSportId });
-      assertSuccess<{ teamStats: ID }, { error: string }>(teamResult, "add India team");
+      const teamResult = await stats.addTeam({
+        teamname: TEAM_INDIA_NAME,
+        sport: cricketSportId,
+      });
+      assertSuccess<{ teamStats: ID }, { error: string }>(
+        teamResult,
+        "add India team",
+      );
       const { teamStats: indiaTeamStatsId } = teamResult;
 
       // Test addTeam for a duplicate team in the same sport
       assertFailure(
-        await stats.addTeam({ teamname: TEAM_INDIA_NAME, sport: cricketSportId }),
+        await stats.addTeam({
+          teamname: TEAM_INDIA_NAME,
+          sport: cricketSportId,
+        }),
         `TeamStats for team '${TEAM_INDIA_NAME}' in sport '${cricketSportId}' already exists.`,
         "addTeam for a duplicate team",
       );
 
       // Test removeTeam for a nonexistent team
       assertFailure(
-        await stats.removeTeam({ teamname: TEAM_NONEXISTENT_NAME, sport: cricketSportId }),
+        await stats.removeTeam({
+          teamname: TEAM_NONEXISTENT_NAME,
+          sport: cricketSportId,
+        }),
         `TeamStats for team '${TEAM_NONEXISTENT_NAME}' in sport '${cricketSportId}' does not exist.`,
         "removeTeam for a nonexistent team",
       );
 
       // Test addKeyStat to a nonexistent sport
       assertFailure(
-        await stats.addKeyStat({ sportName: "NonexistentSport", stat: STAT_ASSISTS }),
+        await stats.addKeyStat({
+          sportName: "NonexistentSport",
+          stat: STAT_ASSISTS,
+        }),
         "Sport 'NonexistentSport' does not exist.",
         "addKeyStat to a nonexistent sport",
       );
 
       // Test addKeyStat for a duplicate stat
       assertFailure(
-        await stats.addKeyStat({ sportName: SPORT_CRICKET_NAME, stat: STAT_RUNS }),
+        await stats.addKeyStat({
+          sportName: SPORT_CRICKET_NAME,
+          stat: STAT_RUNS,
+        }),
         `Stat '${STAT_RUNS}' is already a key stat for sport 'Cricket'.`,
         "addKeyStat for a duplicate stat",
       );
@@ -575,13 +659,131 @@ Deno.test(
         sport: cricketSportId,
       });
       assertSuccess<{ keyStatsData: Record<ID, unknown> }, { error: string }>(
-        fetchResult, "fetch stats for team with no values yet",);
+        fetchResult,
+        "fetch stats for team with no values yet",
+      );
       const { keyStatsData } = fetchResult;
-      assertEquals(Object.keys(keyStatsData).length, 0, "Should return an empty map for no stat values",);
+      assertEquals(
+        Object.keys(keyStatsData).length,
+        0,
+        "Should return an empty map for no stat values",
+      );
 
       // Clean up
-      assertSuccess(await stats.removeTeam({ teamname: TEAM_INDIA_NAME, sport: cricketSportId }));
+      assertSuccess(
+        await stats.removeTeam({
+          teamname: TEAM_INDIA_NAME,
+          sport: cricketSportId,
+        }),
+      );
       assertSuccess(await stats.deleteSport({ sportName: SPORT_CRICKET_NAME }));
+    } finally {
+      await client.close();
+    }
+  },
+);
+
+Deno.test(
+  "SportsStats Query: _getSportsList returns all added sports",
+  async () => {
+    const [db, client] = await testDb();
+    const stats = new SportsStatsConcept(db);
+    try {
+      // Add two sports
+      const addBaseball = await stats.addSport({
+        sportName: SPORT_BASEBALL_NAME,
+        source: SOURCE_API_MLB,
+        default: new Set([STAT_RUNS, STAT_HOME_RUNS]), // Use Set for test
+      });
+      assertSuccess(addBaseball, "Adding MLB-Baseball should succeed");
+
+      const addBasketball = await stats.addSport({
+        sportName: SPORT_BASKETBALL_NAME,
+        source: SOURCE_API_NBA,
+        default: new Set([STAT_POINTS, STAT_ASSISTS, STAT_REBOUNDS]), // Use Set for test
+      });
+      assertSuccess(addBasketball, "Adding NBA-Basketball should succeed");
+
+      // Query sports list
+      const sportsList = await stats._getSportsList();
+      // Should contain both sports
+      const sportNames = sportsList.map((s) => s.name);
+      assertEquals(
+        sportNames.includes(SPORT_BASEBALL_NAME),
+        true,
+        "MLB-Baseball should be in sports list",
+      );
+      assertEquals(
+        sportNames.includes(SPORT_BASKETBALL_NAME),
+        true,
+        "NBA-Basketball should be in sports list",
+      );
+    } finally {
+      await client.close();
+    }
+  },
+);
+
+Deno.test(
+  "SportsStats Query: _getTeamsBySport returns correct teams for a sport",
+  async () => {
+    const [db, client] = await testDb();
+    const stats = new SportsStatsConcept(db);
+    try {
+      // Add two sports
+      const addBaseball = await stats.addSport({
+        sportName: SPORT_BASEBALL_NAME,
+        source: SOURCE_API_MLB,
+        default: new Set([STAT_RUNS, STAT_HOME_RUNS]),
+      });
+      assertSuccess(addBaseball, "Adding MLB-Baseball should succeed");
+      const baseballId = (addBaseball as { sport: ID }).sport;
+
+      const addBasketball = await stats.addSport({
+        sportName: SPORT_BASKETBALL_NAME,
+        source: SOURCE_API_NBA,
+        default: new Set([STAT_POINTS, STAT_ASSISTS, STAT_REBOUNDS]),
+      });
+      assertSuccess(addBasketball, "Adding NBA-Basketball should succeed");
+      const basketballId = (addBasketball as { sport: ID }).sport;
+
+      // Add teams to each sport
+      const addPhillies = await stats.addTeam({
+        teamname: TEAM_PHILLIES_NAME,
+        sport: baseballId,
+      });
+      assertSuccess(addPhillies, "Adding Phillies to Baseball should succeed");
+      const addLakers = await stats.addTeam({
+        teamname: TEAM_LAKERS_NAME,
+        sport: basketballId,
+      });
+      assertSuccess(addLakers, "Adding Lakers to Basketball should succeed");
+
+      // Query teams by sport
+      const baseballTeams = await stats._getTeamsBySport({
+        sportId: baseballId,
+      });
+      const basketballTeams = await stats._getTeamsBySport({
+        sportId: basketballId,
+      });
+
+      // Should contain only the correct teams
+      assertEquals(baseballTeams.length, 1, "Baseball should have one team");
+      assertEquals(
+        baseballTeams[0].name,
+        TEAM_PHILLIES_NAME,
+        "Baseball team should be Phillies",
+      );
+      assertEquals(
+        basketballTeams.length,
+        1,
+        "Basketball should have one team",
+      );
+      assertEquals(
+        basketballTeams[0].name,
+        TEAM_LAKERS_NAME,
+        "Basketball team should be Lakers",
+      );
     } finally {
       await client.close();
     }
