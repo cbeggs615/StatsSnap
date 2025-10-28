@@ -1,6 +1,7 @@
 # API Specification: SportsStats Concept
 
-**Purpose:** store team statistics in a structured way, where each sport defines which stats are tracked and which are considered key
+**Purpose:**
+store team statistics in a structured and extensible way, where each sport defines a set of *default stats* it typically tracks, and each team maintains its own independent values for those stats.
 
 ---
 
@@ -8,17 +9,19 @@
 
 ### POST /api/SportsStats/addTeam
 
-**Description:** Adds a new team with a specified name to a given sport, creating a new TeamStats entry.
+**Description:**
+Adds a new team with a specified name to a given sport, creating a new TeamStats entry.
 
 **Requirements:**
 - no TeamStats for this teamname with this sport already exists
-- The sport must exist.
+- the specified sport must exist
 
 **Effects:**
-- creates a new TeamStats for this teamname for sport, returning its ID.
+- creates a new TeamStats for this teamname and sport
+- returns the ID of the newly created TeamStats entry
 
 **Request Body:**
-```json
+```
 {
   "teamname": "string",
   "sport": "string"
@@ -26,14 +29,14 @@
 ```
 
 **Success Response Body (Action):**
-```json
+```
 {
   "teamStats": "string"
 }
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -43,17 +46,18 @@
 
 ### POST /api/SportsStats/removeTeam
 
-**Description:** Removes a team's statistics entry for a given sport, including all associated statistical values.
+**Description:**
+Removes a team's statistics entry for a given sport, including all associated statistical values.
 
 **Requirements:**
 - TeamStats for this teamname with this sport exists
 
 **Effects:**
-- removes TeamStats for this teamname for sport
-- removes all associated stat values for the removed TeamStats entry.
+- removes the TeamStats entry
+- deletes all associated StatValues for that team
 
 **Request Body:**
-```json
+```
 {
   "teamname": "string",
   "sport": "string"
@@ -61,14 +65,14 @@
 ```
 
 **Success Response Body (Action):**
-```json
+```
 {
   "teamStats": "string"
 }
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -78,33 +82,34 @@
 
 ### POST /api/SportsStats/addSport
 
-**Description:** Adds a new sport, defining its associated data source and an initial set of key statistics.
+**Description:**
+Adds a new sport, defining its data source and a static set of default statistics.
 
 **Requirements:**
-- no Sport with this name exists
+- no Sport with this name already exists
 
 **Effects:**
-- creates a new Sport with this source with KeyStats set as default
-- returns the ID of the newly created sport.
+- creates a new Sport with the specified source
+- records its default set of Stats as the sport’s baseline tracked metrics
 
 **Request Body:**
-```json
+```
 {
   "sportName": "string",
   "source": "string",
-  "default": ["string"]
+  "defaults": ["string"]
 }
 ```
 
 **Success Response Body (Action):**
-```json
+```
 {
   "sport": "string"
 }
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -114,98 +119,33 @@
 
 ### POST /api/SportsStats/deleteSport
 
-**Description:** Deletes a sport definition from the concept's state.
+**Description:**
+Deletes a sport definition from the concept’s state.
 
 **Requirements:**
 - Sport with this name exists
-- no teams associated with the sport exists
+- no teams are currently associated with this sport
 
 **Effects:**
-- removes sportname from state
-- removes any associated stat values for this sport (if they were stored with `sportId`).
+- removes the Sport
+- removes all StatValues associated with that sport
 
 **Request Body:**
-```json
+```
 {
   "sportName": "string"
 }
 ```
 
 **Success Response Body (Action):**
-```json
+```
 {
   "sport": "string"
 }
 ```
 
 **Error Response Body:**
-```json
-{
-  "error": "string"
-}
 ```
-
----
-
-### POST /api/SportsStats/addKeyStat
-
-**Description:** Adds a specific statistic to a sport's list of key statistics.
-
-**Requirements:**
-- Sport with this name exists
-- stat is not already in its KeyStats
-
-**Effects:**
-- adds stat to sportName's KeyStats
-
-**Request Body:**
-```json
-{
-  "sportName": "string",
-  "stat": "string"
-}
-```
-
-**Success Response Body (Action):**
-```json
-{}
-```
-
-**Error Response Body:**
-```json
-{
-  "error": "string"
-}
-```
-
----
-
-### POST /api/SportsStats/removeKeyStat
-
-**Description:** Removes a specific statistic from a sport's list of key statistics.
-
-**Requirements:**
-- Sport with this name exists
-- stat is in its KeyStats
-
-**Effects:**
-- removes stat from sportName's KeyStats
-
-**Request Body:**
-```json
-{
-  "sportName": "string",
-  "stat": "string"
-}
-```
-
-**Success Response Body (Action):**
-```json
-{}
-```
-
-**Error Response Body:**
-```json
 {
   "error": "string"
 }
@@ -215,35 +155,40 @@
 
 ### POST /api/SportsStats/fetchTeamStats
 
-**Description:** Fetches the current values for all key statistics for a specific team in a given sport.
+**Description:**
+Fetches the current values for a team’s statistics in a given sport.
+If a set of stat IDs is provided, returns only those.
+Otherwise, returns values for the sport’s defaultKeyStats;
+if the sport has no defaults, returns all existing StatValues for that team.
 
 **Requirements:**
-- TeamStat for this teamname and sport exists
+- TeamStats for this teamname and sport exists
 
 **Effects:**
-- for each KeyStat in sport's KeyStats, fetches Data for this specific team from the concept's internal StatValues
-- returns a map of Stat IDs to their corresponding Data values.
+- retrieves data for either the requested stat IDs, the sport’s defaultKeyStats, or all available stats
+- returns a map of Stat IDs to their Data values
 
 **Request Body:**
-```json
+```
 {
   "teamname": "string",
-  "sport": "string"
+  "sport": "string",
+  "stats": ["string (optional)"]
 }
 ```
 
 **Success Response Body (Action):**
-```json
+```
 {
   "keyStatsData": {
-    "statIdExample1": "any value (e.g., number, string, object)",
-    "statIdExample2": "any value (e.g., number, string, object)"
+    "statIdExample1": "any",
+    "statIdExample2": "any"
   }
 }
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -253,16 +198,18 @@
 
 ### POST /api/SportsStats/_setStatValue
 
-**Description:** (System Action) Either creates a new statistical value entry or updates an existing one for a specified team, sport, and stat. This action is intended for internal or system-level updates, typically triggered by syncs, and is not generally meant for direct client interaction.
+**Description:**
+(System Action) Creates or updates a StatValue entry for a specific team, sport, and stat.
+Used internally or by sync processes that ingest data from external APIs.
 
 **Requirements:**
-- a TeamStats entry for the given teamname and sport must exist.
+- TeamStats for the given teamname and sport exists
 
 **Effects:**
-- either creates a new StatValue entry or updates an existing one for the specified team, sport, and stat
+- creates or updates a StatValue entry for the given team, sport, and statId
 
 **Request Body:**
-```json
+```
 {
   "teamname": "string",
   "sport": "string",
@@ -272,12 +219,12 @@
 ```
 
 **Success Response Body (Action):**
-```json
+```
 {}
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -287,28 +234,30 @@
 
 ### POST /api/SportsStats/_getSportsList
 
-**Description:** Retrieves a list of all sports, including their IDs and names.
+**Description:**
+Retrieves a list of all sports, including their IDs, names, and optionally default stat definitions.
 
 **Request Body:**
-```json
+```
 {}
 ```
 
 **Effects:**
-- Returns an array of sports objects, each containing `_id` and `name`.
+- returns an array of sports with `_id`, `name`, and `defaultKeyStats`
 
 **Success Response Body (Query):**
-```json
+```
 [
   {
     "_id": "string",
-    "name": "string"
+    "name": "string",
+    "defaultKeyStats": ["string"]
   }
 ]
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -318,18 +267,19 @@
 
 ### POST /api/SportsStats/_getAllTeams
 
-**Description:** Retrieves a list of all teams, including their IDs, names, and associated sport IDs.
+**Description:**
+Retrieves a list of all teams, including their IDs, names, and associated sport IDs.
 
 **Request Body:**
-```json
+```
 {}
 ```
 
 **Effects:**
-- Returns an array of team objects, each containing `_id`, `name`, and `sport`.
+- returns an array of all team documents
 
 **Success Response Body (Query):**
-```json
+```
 [
   {
     "_id": "string",
@@ -340,7 +290,7 @@
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -350,20 +300,21 @@
 
 ### POST /api/SportsStats/_getTeamsBySport
 
-**Description:** Retrieves a list of all teams for a given sport ID.
+**Description:**
+Retrieves all teams for a specified sport.
 
 **Request Body:**
-```json
+```
 {
   "sport": "string"
 }
 ```
 
 **Effects:**
-- Returns an array of team objects, each containing `_id` and `name`.
+- returns an array of teams (`_id`, `name`) for that sport
 
 **Success Response Body (Query):**
-```json
+```
 [
   {
     "_id": "string",
@@ -373,7 +324,7 @@
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }
@@ -383,10 +334,11 @@
 
 ### POST /api/SportsStats/fetchAvailableStatsForTeam
 
-**Description:** Returns all stat IDs that have values for a given team in a specific sport.
+**Description:**
+Returns all stat IDs that currently have stored values for a given team in a specific sport.
 
 **Request Body:**
-```json
+```
 {
   "teamname": "string",
   "sport": "string"
@@ -394,14 +346,14 @@
 ```
 
 **Success Response Body (Query):**
-```json
+```
 {
   "stats": ["string"]
 }
 ```
 
 **Error Response Body:**
-```json
+```
 {
   "error": "string"
 }

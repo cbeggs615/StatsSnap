@@ -1,44 +1,65 @@
-**concept** SportsStats[Source, Stat, Data]  
-**purpose** store team statistics in a structured way, where each sport defines which stats are tracked and which are considered key  
-**principle** each sport defines a set of stats relevant to it (with some marked as key); teams belonging to that sport inherit those stat types and maintain their own current values  
-**state**  
-       a set of TeamStats with ...  
-             a name String  
-             a Sport  
-       a set of Sports with ...  
-             a name String  
-             a Source  
-             a KeyStats set of Stats  
-       a set of StatValues with
-             a teamStatId TeamStats
-             a sportId Sport 
-             a statId Stat 
-             a value Data
-**actions**  
-       addTeam (teamname: String, sport: Sport): (teamStats: TeamStat)  
-             **requires** no TeamStats for this teamname with this sport already exists  
-             **effects** creates a new TeamStats for this teamname for sport  
-       removeTeam (teamname: String, sport: Sport): (teamStats: TeamStat)  
-             **requires** TeamStats for this teamname with this sport exists  
-             **effects** removes TeamStats for this teamname for sport  
-       addSport (sportName: String, source: Source, default: Set of Stats): (sport: Sport)  
-             **requires** no Sport with this name exists  
-             **effects** creates a new Sport with this source with KeyStats set as default  
-       deleteSport (sportName: String): (sport: Sport)  
-             **requires** Sport with this name exists and no teams associated with the sport exists  
-             **effects** removes sportname from state  
-       addKeyStat (sportName: String, stat: Stat):  
-             **requires** Sport with this name exists and stat is not already in its KeyStats  
-             **effects** adds stat to sportName's KeyStats  
-       removeKeyStat (sportName: String, stat: Stat):  
-             **requires** Sport with this name exists and stat is in its KeyStats  
-             **effects** removes stat from sportName's KeyStats  
-       fetchTeamStats (teamname: String, sport: Sport): (keyStatsData: Map<Stat, Data>)  
-             **requires** TeamStat for this teamname and sport exists  
-             **effects** for each KeyStat in sport's KeyStats, fetches Data for this specific team from the concept's internal StatValues
-        system setStatValue (teamname: String, sport: Sport, statId: Stat, value: Data):  
-             **requires** a TeamStats entry for the given teamname and sport must exist.
-             **effects** either creates a new StatValue entry or updates an existing one for the specified team, sport, and stat
+**concept** SportsStats[Source, Stat, Data]
+
+**purpose**
+store team statistics in a structured and extensible way, where each sport defines a set of *default stats* it typically tracks, and each team maintains its own independent values for those stats.
+
+**principle**
+each sport provides a set of *default* stat types relevant to it; teams belonging to that sport inherit those defaults for fetching, while the actual stat values are maintained independently for each team. new or custom stats can be tracked dynamically without modifying the sport definition.
 
 
-**notes**: Actual statistical data is stored internally by the concept (e.g., via syncs that populate values from each sport’s Source). The concept itself defines the structure and relationships but relies on these syncs or system actions to update stat values.
+**state**
+- a set of **TeamStats** with
+  - a name String
+  - a Sport
+
+- a set of **Sports** with
+  - a name String
+  - a Source
+  - a defaultStats set of Stats
+
+- a set of **StatValues** with
+  - a teamStatId TeamStats
+  - a sportId Sport
+  - a statId Stat
+  - a value Data
+
+
+**actions**
+
+- **addTeam**(teamname: String, sport: Sport): (teamStats: TeamStat)
+  - **requires** no TeamStats for this teamname with this sport already exists
+  - **effects** creates a new TeamStats entry for this teamname and sport
+
+- **removeTeam**(teamname: String, sport: Sport): (teamStats: TeamStat)
+  - **requires** TeamStats for this teamname and sport exists
+  - **effects** removes the TeamStats entry and all associated StatValues for that team
+
+- **addSport**(sportName: String, source: Source, defaults: Set of Stats): (sport: Sport)
+  - **requires** no Sport with this name already exists
+  - **effects** creates a new Sport with the given source and records its default set of Stats to be used as the typical tracked metrics
+
+- **deleteSport**(sportName: String): (sport: Sport)
+  - **requires** Sport with this name exists and no teams are associated with it
+  - **effects** removes the Sport and any StatValues associated with that sport
+
+- **fetchTeamStats**(teamname: String, sport: Sport): (keyStatsData: Map<Stat, Data>)
+  - **requires** TeamStats for this teamname and sport exists
+  - **effects**
+    - returns data teamname for the Sport’s defaultStats
+
+- **fetchTeamStats**(teamname: String, sport: Sport, stats: Set of Stats): (keyStatsData: Map<Stat, Data>)
+  - **requires** TeamStats for this teamname and sport exists, stats are stats in the StatValues for the TeamStats associated with teamname/sport
+  - **effects**
+    - if stats is provided, returns teamname's data for those specific Stats
+
+- **system _setStatValue**(teamname: String, sport: Sport, statId: Stat, value: Data)
+  - **requires** a TeamStats entry for the given teamname and sport exists
+  - **effects** creates or updates a StatValue entry for that team, sport, and statId
+
+---
+
+**notes**
+- the concept defines the core relationships between Sports, Teams, and Stat Values.
+- statistical data (`StatValues`) is managed internally but populated through external syncs (e.g., from an API identified by the Sport’s `source`).
+- default Stats act as a baseline view for fetching, but the concept remains open to dynamic tracking of additional stats per team
+- no actions mutate a Sport’s `defaultStats` after creation — defaults serve as static metadata for display and inheritance purposes.

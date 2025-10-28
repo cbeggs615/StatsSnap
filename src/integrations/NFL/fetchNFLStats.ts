@@ -1,5 +1,3 @@
-// src/integrations/nfl/fetchNFLTeamStats.ts
-
 let cachedStandings: any[] | null = null;
 
 async function getAllNFLStandings() {
@@ -65,19 +63,27 @@ export async function fetchNFLTeamStats(teamId: string) {
   const wins = statsMap["wins"] ?? 0;
   const losses = statsMap["losses"] ?? 0;
   const ties = statsMap["ties"] ?? 0;
-  const pointsFor = statsMap["pointsFor"] ?? 0;
-  const pointsAgainst = statsMap["pointsAgainst"] ?? 0;
+  const totalPointsFor = statsMap["pointsFor"] ?? 0;
+  const totalPointsAgainst = statsMap["pointsAgainst"] ?? 0;
+  const gamesPlayed = wins + losses + ties;
+
+  // 🧮 Compute averages per game (rounded to 1 decimal)
+  const avgPointsFor =
+    gamesPlayed > 0 ? Number((totalPointsFor / gamesPlayed).toFixed(1)) : 0;
+  const avgPointsAgainst =
+    gamesPlayed > 0 ? Number((totalPointsAgainst / gamesPlayed).toFixed(1)) : 0;
 
   console.log(
-    `✅ Parsed ${entry.team.displayName}: W=${wins}, L=${losses}, T=${ties}, PF=${pointsFor}, PA=${pointsAgainst}`
+    `✅ Parsed ${entry.team.displayName}: W=${wins}, L=${losses}, T=${ties}, PPG=${avgPointsFor}, PAPG=${avgPointsAgainst}`
   );
 
   return {
     wins,
     losses,
     ties,
-    pointsFor,
-    pointsAgainst,
+    gamesPlayed,
+    avgPointsFor,
+    avgPointsAgainst,
     record: `${wins}-${losses}${ties ? `-${ties}` : ""}`,
     logo: entry.team?.logos?.[0]?.href ?? null,
   };

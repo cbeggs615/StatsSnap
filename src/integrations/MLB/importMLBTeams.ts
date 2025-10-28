@@ -10,50 +10,53 @@ export async function importMLBTeams() {
   const [db, client] = await getDb() as [import("npm:mongodb").Db, MongoClient];
   const stats = new SportsStatsConcept(db);
 
-  // 1️⃣ Ensure MLB sport exists or create it
-  let sport = await db.collection("SportsStats.sports").findOne({
-    name: "MLB-Baseball",
+  // 1️⃣ Remove any old MLB sport so we can recreate it with correct defaultKeyStats
+  console.log("🧹 Removing any existing MLB-Baseball sport...");
+  await db.collection("SportsStats.sports").deleteOne({ name: "MLB-Baseball" });
+
+  // 2️⃣ Add the MLB sport fresh with correct defaultKeyStats
+  console.log("⚙️ Adding new sport: MLB-Baseball");
+  const res = await stats.addSport({
+    sportName: "MLB-Baseball",
+    source: "source:MLB_API" as ID,
+    default: new Set(["stat:wins" as ID, "stat:losses" as ID]),
   });
 
-  if (!sport) {
-    console.log("⚙️  Adding new sport: MLB-Baseball");
-    const res = await stats.addSport({
-      sportName: "MLB-Baseball",
-      source: "source:MLB_API" as ID,
-      default: new Set(["stat:runs" as ID, "stat:home_runs" as ID]),
-    });
-    if ("sport" in res) {
-      sport = await db.collection("SportsStats.sports").findOne({ _id: res.sport });
-    }
-  }
-
-  if (!sport?._id) {
-    console.error("❌ Could not locate or create MLB sport.");
+  if (!("sport" in res)) {
+    console.error("❌ Failed to add MLB sport:", res.error);
     await client.close();
     return;
   }
 
-  // 2️⃣ Remove all existing teams for this sport
+  const sport = await db.collection("SportsStats.sports").findOne({ _id: res.sport });
+  if (!sport?._id) {
+    console.error("❌ Could not locate MLB sport after creation.");
+    await client.close();
+    return;
+  }
+
+  // 3️⃣ Remove all existing teams for this sport
   const deleteResult = await db.collection("SportsStats.teams").deleteMany({ sport: String(sport._id) });
   console.log(`🧹 Removed ${deleteResult.deletedCount ?? 0} existing MLB teams.`);
 
-  // 3️⃣ Fetch all MLB teams from the official MLB API
+  // 4️⃣ Fetch all MLB teams from the official MLB API
   console.log("⚾ Fetching teams from MLB API...");
   const teams = await fetchMLBTeams();
 
-  // 4️⃣ Add each team with its externalId
+  // 5️⃣ Add each team
   let addedCount = 0;
   for (const team of teams) {
-    const res = await stats.addTeam({
+    const addRes = await stats.addTeam({
       teamname: team.name,
       sport: String(sport._id) as ID,
-      externalId: team.externalId, // ✅ numeric MLB API ID
+      externalId: team.externalId, // numeric MLB API ID
     });
-    if ("teamStats" in res) {
+
+    if ("teamStats" in addRes) {
       console.log(`   ➕ Added ${team.name}`);
       addedCount++;
     } else {
-      console.warn(`   ⚠️  Failed to add ${team.name}: ${res.error}`);
+      console.warn(`   ⚠️ Failed to add ${team.name}: ${addRes.error}`);
     }
   }
 
@@ -65,9 +68,8 @@ export async function importMLBTeams() {
 
 // Allow direct CLI execution
 if (import.meta.main) {
-  importMLBTeams()
-    .catch((err) => {
-      console.error("❌ Error during MLB team import:", err);
-      Deno.exit(1);
-    });
+  importMLBTeams().catch((err) => {
+    console.error("❌ Error during MLB team import:", err);
+    Deno.exit(1);
+  });
 }

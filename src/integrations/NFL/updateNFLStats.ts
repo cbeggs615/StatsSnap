@@ -37,9 +37,8 @@ export async function updateNFLTeamStats() {
         "stat:wins": stats.wins,
         "stat:losses": stats.losses,
         "stat:ties": stats.ties,
-        "stat:win_percent": stats.winPercent,
-        "stat:points": stats.pointsFor,
-        "stat:points_against": stats.pointsAgainst,
+        "stat:avg_points": stats.avgPointsFor,
+        "stat:avg_points_against": stats.avgPointsAgainst,
       };
 
       for (const [statId, value] of Object.entries(statMap)) {
@@ -52,7 +51,7 @@ export async function updateNFLTeamStats() {
       }
 
       console.log(
-        `✅ Updated ${team.name}: W=${stats.wins}, L=${stats.losses}, T=${stats.ties}, PF=${stats.pointsFor}, PA=${stats.pointsAgainst}`
+        `✅ Updated ${team.name}: W=${stats.wins}, L=${stats.losses}, T=${stats.ties}}`
       );
       updated++;
     } catch (err) {

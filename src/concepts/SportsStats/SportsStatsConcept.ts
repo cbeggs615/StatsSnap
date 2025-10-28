@@ -32,7 +32,7 @@ interface SportsDocument {
   name: string; // The name of the sport (e.g., "Basketball", "Football")
   source: Source; // An opaque ID referencing where the data for this sport *might* originate or be categorized.
   // The concept itself does not interpret this ID for external fetching.
-  keyStats: Stat[]; // A list of Stat IDs considered "key" for this sport.
+  defaultKeyStats: Stat[]; // A list of Stat IDs considered "key" for this sport.
 }
 
 /**
@@ -178,7 +178,7 @@ export default class SportsStatsConcept {
       _id: newSportId,
       name: sportName,
       source: source,
-      keyStats: Array.from(defaultKeyStats), // Convert Set to Array for MongoDB storage
+      defaultKeyStats: Array.from(defaultKeyStats), // Convert Set to Array for MongoDB storage
     });
 
     if (insertResult.acknowledged) {
@@ -227,137 +227,120 @@ export default class SportsStatsConcept {
     }
   }
 
-  /**
-   * @action addKeyStat
-   * @requires Sport with this name exists, and the stat is not already in its KeyStats.
-   * @effects adds the specified stat to the sport's set of KeyStats.
-   */
-  async addKeyStat(
-    { sportName, stat }: { sportName: string; stat: Stat },
-  ): Promise<Empty | { error: string }> {
-    // Precondition 1: Check if the Sport with this name exists
-    const sportDoc = await this.sports.findOne({ name: sportName });
-    if (!sportDoc) {
-      return { error: `Sport '${sportName}' does not exist.` };
-    }
 
-    // Precondition 2: Check if the stat is not already a key stat for this sport
-    if (sportDoc.keyStats.includes(stat)) {
-      return {
-        error: `Stat '${stat}' is already a key stat for sport '${sportName}'.`,
-      };
-    }
 
-    // Effect: Add the stat to the sport's KeyStats array
-    const updateResult = await this.sports.updateOne(
-      { _id: sportDoc._id },
-      { $addToSet: { keyStats: stat } }, // $addToSet ensures uniqueness
-    );
+  // /**
+  //  * @action fetchTeamStats
+  //  * @requires TeamStat for this teamname and sport exists.
+  //  * @effects for each KeyStat in sport's KeyStats, fetches Data for this specific team from the concept's internal storage.
+  //  *          Returns a map of Stat IDs to their corresponding Data values.
+  //  *
+  //  * @note Design Implication: The provided concept specification for SportsStats does not include an explicit
+  //  *       action to *store* or *update* the actual statistical `Data` for teams. To adhere to the
+  //  *       "Completeness of functionality" principle, this implementation assumes that `SportsStats` itself
+  //  *       manages these values in an internal `statValues` collection. Without a public action to populate
+  //  *       this collection, `fetchTeamStats` will primarily return an empty map or only data previously
+  //  *       injected (e.g., via `syncs` calling an internal helper method like `_setStatValue` for testing).
+  //  *       This highlights a potential gap in the concept's provided action set if the intention was for
+  //  *       this concept to fully manage both definitions *and* values of statistics through its public API.
+  //  */
+  // async fetchTeamStats(
+  //   { teamname, sport }: { teamname: string; sport: ID },
+  // ): Promise<{ keyStatsData: Record<Stat, Data> } | { error: string }> {
+  //   // Precondition: Check if TeamStat for this teamname and sport exists
+  //   const teamStatsDoc = await this.teams.findOne({
+  //     name: teamname,
+  //     sport: sport,
+  //   });
+  //   if (!teamStatsDoc) {
+  //     return {
+  //       error:
+  //         `TeamStats for team '${teamname}' in sport '${sport}' does not exist.`,
+  //     };
+  //   }
 
-    if (updateResult.acknowledged && updateResult.modifiedCount === 1) {
-      return {};
-    } else {
-      return { error: "Failed to add key stat." };
-    }
-  }
+  //   // Retrieve the associated Sport document to get its key stats
+  //   const sportDoc = await this.sports.findOne({ _id: sport });
+  //   if (!sportDoc) {
+  //     // This case indicates an inconsistency (a team exists for a non-existent sport ID)
+  //     return {
+  //       error:
+  //         `Associated sport with ID '${sport}' not found, which is an internal inconsistency.`,
+  //     };
+  //   }
 
-  /**
-   * @action removeKeyStat
-   * @requires Sport with this name exists, and the stat is currently in its KeyStats.
-   * @effects removes the specified stat from the sport's set of KeyStats.
-   */
-  async removeKeyStat(
-    { sportName, stat }: { sportName: string; stat: Stat },
-  ): Promise<Empty | { error: string }> {
-    // Precondition 1: Check if the Sport with this name exists
-    const sportDoc = await this.sports.findOne({ name: sportName });
-    if (!sportDoc) {
-      return { error: `Sport '${sportName}' does not exist.` };
-    }
+  //   const keyStatsData: Record<Stat, Data> = {};
+  //   const teamStatId = teamStatsDoc._id;
+  //   const sportId = sportDoc._id;
 
-    // Precondition 2: Check if the stat is currently a key stat for this sport
-    if (!sportDoc.keyStats.includes(stat)) {
-      return {
-        error: `Stat '${stat}' is not a key stat for sport '${sportName}'.`,
-      };
-    }
+  //   // Fetch all relevant stat values from the internal `statValues` collection
+  //   const statValuesDocs = await this.statValues.find({
+  //     teamStatId: teamStatId,
+  //     sportId: sportId,
+  //     statId: { $in: sportDoc.keyStats }, // Filter only for key stats defined for this sport
+  //   }).toArray();
 
-    // Effect: Remove the stat from the sport's KeyStats array
-    const updateResult = await this.sports.updateOne(
-      { _id: sportDoc._id },
-      { $pull: { keyStats: stat } },
-    );
+  //   // Populate the result map with fetched data
+  //   for (const statId of sportDoc.keyStats) {
+  //     const valueDoc = statValuesDocs.find((doc) => doc.statId === statId);
+  //     if (valueDoc) {
+  //       keyStatsData[statId] = valueDoc.value;
+  //     }
+  //     // If a key stat has no corresponding value in `statValues`, it's simply omitted from the map.
+  //     // Depending on requirements, it could default to `null`, `0`, or `undefined`.
+  //   }
 
-    if (updateResult.acknowledged && updateResult.modifiedCount === 1) {
-      return {};
-    } else {
-      return { error: "Failed to remove key stat." };
-    }
-  }
+  //   return { keyStatsData: keyStatsData };
+  // }
 
-  /**
+    /**
    * @action fetchTeamStats
    * @requires TeamStat for this teamname and sport exists.
-   * @effects for each KeyStat in sport's KeyStats, fetches Data for this specific team from the concept's internal storage.
-   *          Returns a map of Stat IDs to their corresponding Data values.
-   *
-   * @note Design Implication: The provided concept specification for SportsStats does not include an explicit
-   *       action to *store* or *update* the actual statistical `Data` for teams. To adhere to the
-   *       "Completeness of functionality" principle, this implementation assumes that `SportsStats` itself
-   *       manages these values in an internal `statValues` collection. Without a public action to populate
-   *       this collection, `fetchTeamStats` will primarily return an empty map or only data previously
-   *       injected (e.g., via `syncs` calling an internal helper method like `_setStatValue` for testing).
-   *       This highlights a potential gap in the concept's provided action set if the intention was for
-   *       this concept to fully manage both definitions *and* values of statistics through its public API.
+   * @effects fetches Data for the specified stats (if provided), or for each default stat
+   *          defined in the sport. Returns a map of Stat IDs to their corresponding values.
    */
   async fetchTeamStats(
-    { teamname, sport }: { teamname: string; sport: ID },
+    { teamname, sport, stats }: { teamname: string; sport: ID; stats?: Stat[] },
   ): Promise<{ keyStatsData: Record<Stat, Data> } | { error: string }> {
-    // Precondition: Check if TeamStat for this teamname and sport exists
-    const teamStatsDoc = await this.teams.findOne({
-      name: teamname,
-      sport: sport,
-    });
-    if (!teamStatsDoc) {
-      return {
-        error:
-          `TeamStats for team '${teamname}' in sport '${sport}' does not exist.`,
-      };
-    }
+    const team = await this.teams.findOne({ name: teamname, sport });
+    if (!team) return { error: `TeamStats for team '${teamname}' in sport '${sport}' not found.` };
 
-    // Retrieve the associated Sport document to get its key stats
     const sportDoc = await this.sports.findOne({ _id: sport });
-    if (!sportDoc) {
-      // This case indicates an inconsistency (a team exists for a non-existent sport ID)
-      return {
-        error:
-          `Associated sport with ID '${sport}' not found, which is an internal inconsistency.`,
-      };
+    if (!sportDoc) return { error: `Sport '${sport}' not found.` };
+
+    // pick which stats to fetch: given → defaults → all existing
+    let statIdsToFetch: Stat[] | undefined;
+
+    if (stats !== undefined) {
+      // If stats is provided (even empty), use exactly what was given
+      statIdsToFetch = stats;
+    } else {
+      // If stats not provided, use defaults
+      statIdsToFetch = sportDoc.defaultKeyStats;
     }
 
-    const keyStatsData: Record<Stat, Data> = {};
-    const teamStatId = teamStatsDoc._id;
-    const sportId = sportDoc._id;
+    if (!statIdsToFetch) {
+      // fallback: gather all statIds that exist for this team
+      const existing = await this.statValues.find({
+        teamStatId: team._id,
+        sportId: sport,
+      }).project({ statId: 1 }).toArray();
+      statIdsToFetch = existing.map(d => d.statId);
+    }
 
-    // Fetch all relevant stat values from the internal `statValues` collection
-    const statValuesDocs = await this.statValues.find({
-      teamStatId: teamStatId,
-      sportId: sportId,
-      statId: { $in: sportDoc.keyStats }, // Filter only for key stats defined for this sport
+    const statDocs = await this.statValues.find({
+      teamStatId: team._id,
+      sportId: sport,
+      statId: { $in: statIdsToFetch },
     }).toArray();
 
-    // Populate the result map with fetched data
-    for (const statId of sportDoc.keyStats) {
-      const valueDoc = statValuesDocs.find((doc) => doc.statId === statId);
-      if (valueDoc) {
-        keyStatsData[statId] = valueDoc.value;
-      }
-      // If a key stat has no corresponding value in `statValues`, it's simply omitted from the map.
-      // Depending on requirements, it could default to `null`, `0`, or `undefined`.
-    }
+    const keyStatsData: Record<Stat, Data> = {};
+    for (const doc of statDocs) keyStatsData[doc.statId] = doc.value;
 
-    return { keyStatsData: keyStatsData };
+    return { keyStatsData };
   }
+
+
 
   /**
    * @system _setStatValue (Internal / System Action for data injection)
@@ -419,16 +402,22 @@ export default class SportsStatsConcept {
     return {};
   }
 
-  /**
-   * @query _getSportsList
-   * @returns Array of all sports documents (or just their IDs and names)
-   */
-  async _getSportsList(): Promise<Array<{ _id: ID; name: string }>> {
-    const sportsList = await this.sports.find({}, {
-      projection: { _id: 1, name: 1 },
-    }).toArray();
-    return sportsList;
-  }
+/**
+ * @query _getSportsList
+ * @returns Array of all sports documents, including their IDs, names, and default stats
+ */
+async _getSportsList(): Promise<
+  Array<{ _id: ID; name: string; defaultKeyStats: ID[] }>
+> {
+  const sportsList = await this.sports.find(
+    {},
+    {
+      projection: { _id: 1, name: 1, defaultKeyStats: 1 },
+    },
+  ).toArray();
+  return sportsList;
+}
+
 
   /**
    * @query getAllTeams
