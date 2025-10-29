@@ -1,10 +1,5 @@
-# 6.104 Assignment 4: Implementing Concepts
+# StatSnap Backend:
+[Recent Design Change Notes](design_changes_A4B.md): for assignment 4b
 
-Notes: 
-
-**Design files** for each concept are in their respective design/concepts/[concept_name]/design-notes
-	 specs are also in each concept's folder
-
-**Interesting Moments** are in design/design-as-a-whole
-
-**Tests/implementations** are in src/concepts/[concept-name]/
+`src/concepts/[concept_name]`: contains code for specified concept and associated tests
+`src/integrations/[sportLeague]`: contains code to update DB for major sports leagues

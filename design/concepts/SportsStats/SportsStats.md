@@ -1,7 +1,7 @@
 **concept** SportsStats[Source, Stat, Data]
 
 **purpose**
-store team statistics in a structured and extensible way, where each sport defines a set of *default stats* it typically tracks, and each team maintains its own independent values for those stats.
+store team statistics in a structured way. Each sport defines a set of **default stats** it typically tracks, while teams maintain their own independent, up-to-date values for those stats.
 
 **principle**
 each sport provides a set of *default* stat types relevant to it; teams belonging to that sport inherit those defaults for fetching, while the actual stat values are maintained independently for each team. new or custom stats can be tracked dynamically without modifying the sport definition.
