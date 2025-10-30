@@ -27,7 +27,7 @@ The following prefix format for header 1 blocks denote the relevant steps:
 
 * `# concept: {name}`
 	* A specification of the concept we're looking to implement
-* `# file: src/{name}/{name}Concept.ts`
+* `# file: src/concepts/{name}/{name}Concept.ts`
 	* The implementation of the concept class as a TypeScript code block
 * `# problem:`
 	* Description of any issues that arise with running/operating the implementation
@@ -192,8 +192,8 @@ the query specification
 
 ```
 	\_getUsersWithUsernamesAndPasswords (group: Group) : (user: {username: String, password: String})
-    **requires** group exists
-    **effects** returns set of all users in the group each with its username and password
+    **requires** group exists
+    **effects** returns set of all users in the group each with its username and password
 ```
 
 says that the query should return an array of dictionaries, each with a `user` field that holds a dictionary with a `username` and `password` field.
@@ -234,8 +234,8 @@ Every action should have a comment including its signature, its requirements, an
   /**
    * createLabel (name: String): (label: Label)
    *
-   * **requires** no Label with the given `name` already exists
-   *
-   * **effects** creates a new Label `l`; sets the name of `l` to `name`; returns `l` as `label`
+   * **requires** no Label with the given `name` already exists
+   *
+   * **effects** creates a new Label `l`; sets the name of `l` to `name`; returns `l` as `label`
    */
 ```
