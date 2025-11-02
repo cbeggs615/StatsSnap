@@ -26,11 +26,13 @@
 
 export const inclusions: Record<string, string> = {
   // Feel free to delete these example inclusions
-  "/api/LikertSurvey/_getSurveyQuestions": "this is a public query",
-  "/api/LikertSurvey/_getSurveyResponses": "responses are public",
-  "/api/LikertSurvey/_getRespondentAnswers": "answers are visible",
-  "/api/LikertSurvey/submitResponse": "allow anyone to submit response",
-  "/api/LikertSurvey/updateResponse": "allow anyone to update their response",
+
+  "/api/SportsStats/fetchTeamStats": "public can fetch stats for a team",
+  "/api/SportsStats/_getSportsList": "public can get list of available sports in DB",
+  "/api/SportsStats/_getAllTeams": "public can get list of available teams in DB",
+  "/api/SportsStats/_getTeamsBySport": "public can get list of available teams for a given sport",
+  "/api/SportsStats/fetchAvailableStatsForTeam": "public can read available stat types for a team",
+
 };
 
 /**
@@ -44,7 +46,30 @@ export const inclusions: Record<string, string> = {
  */
 
 export const exclusions: Array<string> = [
-  // Feel free to delete these example exclusions
-  "/api/LikertSurvey/createSurvey",
-  "/api/LikertSurvey/addQuestion",
+
+
+  // checking passwords/finding useres should be excluded
+  "/api/PasswordAuth/_checkPassword",
+  "/api/PasswordAuth/_getUserByUsername",
+
+  // changing passwords, registering, authenticate, deleteAccount
+  // should be handled by syncs
+  "/api/PasswordAuth/register",
+  "/api/PasswordAuth/authenticate",
+  "/api/PasswordAuth/changePassword",
+  "/api/PasswordAuth/deleteAccount",
+
+  // sessioning should all be excluded
+  "/api/Sessioning/create",
+  "/api/Sessioning/delete",
+  "/api/Sessioning/_getUser",
+
+  // modifications to Sports DB should only be done through system updates
+  "/api/SportsStats/_setStatValue",
+  "/api/SportsStats/deleteSport",
+  "/api/SportsStats/addSport",
+  "/api/SportsStats/removeTeam",
+  "/api/SportsStats/addTeam",
+
+
 ];

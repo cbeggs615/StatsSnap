@@ -16,13 +16,14 @@
     **requires** no User currently exists with the given `username`.
     **effects** A new User is created, associated with the provided `username` and `password`. The identifier of this new `User` is returned.
 
-  authenticate (username: String, password: String): 
+  authenticate (username: String, password: String): (user: User)
     **requires** A User exists whose `username` matches the input `username` and whose `password` matches the input `password`
+    **effect** returns user associated with username
 
   deleteAccount (username: String, password: String):
     **requires** A User exists whose `username` matches the input `username` and whose `password` matches the input `password`.
-    **effects** The User associated with the given `username` is deleted, along with their `username` and `password` association. 
+    **effects** The User associated with the given `username` is deleted, along with their `username` and `password` association.
 
-  changePassword (username: String, currentPass: String, newPass: String): 
+  changePassword (username: String, currentPass: String, newPass: String):
     **requires** A User exists whose `username` matches the input `username` and whose `password` matches the `currentPass`.
-    **effects** The `password` of the User associated with the given `username` is updated to `newPass. 
+    **effects** The `password` of the User associated with the given `username` is updated to `newPass.

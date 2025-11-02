@@ -1,9 +1,12 @@
-// /**
-//  * Sample synchronizations: feel free to delete this entire file!
-//  */
+/**
+ * Sample synchronizations: feel free to delete this entire file!
+ */
 
 // import { LikertSurvey, Requesting } from "@concepts";
-// import { actions, Sync } from "@engine";
+import { actions, Sync } from "@engine";
+
+
+
 
 // export const CreateSurveyRequest: Sync = (
 //   { request, author, title, scaleMin, scaleMax },

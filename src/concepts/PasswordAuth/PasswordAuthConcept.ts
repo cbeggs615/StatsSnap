@@ -127,7 +127,7 @@ export default class PasswordAuthConcept {
    *
    * requires: A User exists whose `username` matches the input `username`
    *           and whose provided `password` matches the stored PBKDF2 HASH.
-   * effects: Authenticates the user if credentials match. Returns { success: true } on successful authentication.
+   * effects: Authenticates the user if credentials match. Returns { user: User } on successful authentication.
    */
   async authenticate({
     username,
@@ -135,7 +135,7 @@ export default class PasswordAuthConcept {
   }: {
     username: string;
     password: string;
-  }): Promise<{ success: boolean } | { error: string }> {
+  }): Promise<{ user: User } | { error: string }> {
     // Precondition check: Find user by username first.
     const user = await this.users.findOne({ username });
     if (!user) {
@@ -163,8 +163,8 @@ export default class PasswordAuthConcept {
       return { error: "Invalid username or password." };
     }
 
-    // Effect: User is authenticated. Return a non-empty dictionary for success.
-    return { success: true };
+    // Effect: User is authenticated. Return a user in success.
+    return { user: user._id };
   }
 
   /**
