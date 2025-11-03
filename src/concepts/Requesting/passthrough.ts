@@ -33,6 +33,8 @@ export const inclusions: Record<string, string> = {
   "/api/SportsStats/_getTeamsBySport": "public can get list of available teams for a given sport",
   "/api/SportsStats/fetchAvailableStatsForTeam": "public can read available stat types for a team",
 
+
+
 };
 
 /**
@@ -50,7 +52,6 @@ export const exclusions: Array<string> = [
 
   // checking passwords/finding useres should be excluded
   "/api/PasswordAuth/_checkPassword",
-  "/api/PasswordAuth/_getUserByUsername",
 
   // changing passwords, registering, authenticate, deleteAccount
   // should be handled by syncs
@@ -59,10 +60,25 @@ export const exclusions: Array<string> = [
   "/api/PasswordAuth/changePassword",
   "/api/PasswordAuth/deleteAccount",
 
+  "/api/PasswordAuth/_getUserByUsername",
+
   // sessioning should all be excluded
   "/api/Sessioning/create",
   "/api/Sessioning/delete",
   "/api/Sessioning/_getUser",
+
+  "/api/ItemTracking/addUserRecord",
+  "/api/ItemTracking/deleteUserRecord",
+
+  // adding/removing item should be with syncs
+  "/api/ItemTracking/addItem",
+  "/api/ItemTracking/removeItem",
+
+  "/api/ItemTracking/_getItemsTrackedByUser",
+
+  "/api/ItemTracking/_getUsersTrackingItem",
+  "/api/PasswordAuth/_getUsername",
+
 
   // modifications to Sports DB should only be done through system updates
   "/api/SportsStats/_setStatValue",

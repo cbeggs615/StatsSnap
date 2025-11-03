@@ -168,12 +168,12 @@ export default class PasswordAuthConcept {
   }
 
   /**
-   * deleteAccount (username: String, password: String): { success: boolean } | (error: String)
+   * deleteAccount (username: String, password: String): { success: boolean, user: ID } | { error: String }
    *
    * requires: A User exists whose `username` matches the input `username`
    *           and whose provided `password` matches the stored PBKDF2 HASH.
    * effects: The User associated with the given `username` is deleted,
-   *          along with their `username` and password-related data. Returns { success: true } on successful deletion.
+   *          along with their `username` and password-related data. Returns { success: true, user } on successful deletion.
    */
   async deleteAccount({
     username,
@@ -181,7 +181,7 @@ export default class PasswordAuthConcept {
   }: {
     username: string;
     password: string;
-  }): Promise<{ success: boolean } | { error: string }> {
+  }): Promise<{ success: boolean; user: ID } | { error: string }> {
     // Precondition check: Find user by username first.
     const user = await this.users.findOne({ username });
     if (!user) {
@@ -207,11 +207,14 @@ export default class PasswordAuthConcept {
       return { error: "Invalid username or password." };
     }
 
-    // Effect: The User associated with the given username is deleted.
-    await this.users.deleteOne({ _id: user._id });
+    // Store user ID before deletion
+    const userId = user._id;
 
-    // Return a non-empty dictionary for success.
-    return { success: true };
+    // Effect: The User associated with the given username is deleted.
+    await this.users.deleteOne({ _id: userId });
+
+    // Return success and the deleted user ID.
+    return { success: true, user: userId };
   }
 
   /**
@@ -331,5 +334,15 @@ export default class PasswordAuthConcept {
       return { success: true };
     }
     return { error: "Invalid username or password." };
+  }
+
+  /**
+   * @query _getUsername
+   * @effects returns the username for a given user ID
+   */
+  async _getUsername({ user }: { user: ID }): Promise<{ username: string }[]> {
+    const found = await this.users.findOne({ _id: user });
+    if (!found) throw new Error(`User ${user} not found`);
+    return [{ username: found.username }];
   }
 }

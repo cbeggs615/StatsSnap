@@ -1,5 +1,6 @@
 import { Collection, Db } from "npm:mongodb";
 import { Empty, ID } from "@utils/types.ts";
+import { privateEncrypt } from "node:crypto";
 // No freshID needed here as User and Item IDs are external, and UserRecord _id is derived from User.
 
 // Declare collection prefix, use concept name
@@ -121,19 +122,21 @@ export default class ItemTrackingConcept {
    * @effects returns the list of items tracked by a given user
    * @param {object} args - The arguments for the query.
    * @param {User} args.user - The ID of the user.
-   * @returns {{ items: Item[] } | { error: string }} The list of items or an error.
+   * @returns {Promise<Array<{ item: ID } }Always returns an array (empty if none).
    */
   async _getItemsTrackedByUser(
-    { user }: { user: User },
-  ): Promise<{ items: Item[] } | { error: string }> {
+    { user }: { user: ID }
+  ): Promise<Array<{ item: ID }>> {
+
+    console.log(`get Items for ${user}`)
     const userRecord = await this.userRecords.findOne({ _id: user });
-    if (!userRecord) {
-      // In a query, it might be more appropriate to return an empty list or specific status
-      // rather than an error for "not found", depending on expected behavior.
-      // For consistency with action error returns, we'll return an error here.
-      return { error: `UserRecord for user ${user} not found.` };
+    console.log(userRecord)
+    if (!userRecord || !Array.isArray(userRecord.items)) {
+      console.log('in here about to return empty')
+      return [];
     }
-    return { items: userRecord.items };
+    // Map each tracked item to its own frame
+    return userRecord.items.map((item) => ({ item }));
   }
 
   /**
@@ -149,5 +152,20 @@ export default class ItemTrackingConcept {
     const userRecords = await this.userRecords.find({ items: item }).toArray();
     const users = userRecords.map((record) => record._id);
     return { users };
+  }
+
+  /**
+   * @action deleteUserRecord
+   * @requires a UserRecord exists for user
+   * @effects deletes the UserRecord for that user
+   * @param {User} args.user - The ID of the user.
+   * @returns {Empty | { error: string }}
+   */
+  async deleteUserRecord({ user }: { user: User }): Promise<Empty | { error: string }> {
+    const result = await this.userRecords.deleteOne({ _id: user });
+    if (result.deletedCount === 0) {
+      return { error: `UserRecord for user ${user} not found.` };
+    }
+    return {};
   }
 }
