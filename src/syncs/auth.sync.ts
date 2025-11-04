@@ -84,6 +84,36 @@ export const LogoutResponse: Sync = ({ request }) => ({
   then: actions([Requesting.respond, { request, status: "logged_out" }]),
 });
 
+import { getDb } from "@utils/database.ts";
+import SportsStatsConcept from "@concepts/SportsStats/SportsStatsConcept.ts";
+
+export const SyncSportsStatsAfterLogin: Sync = ({ user, session}) => ({
+  when: actions(
+    [PasswordAuth.authenticate, {}, { user }],
+    [Sessioning.create, { user }, { session }]
+  ),
+  where: async (frames) => {
+    const [db] = await getDb();
+    const stats = new SportsStatsConcept(db);
+
+    const lastSync = await stats.getLastSyncTime(db);
+    const now = Date.now();
+    const ONE_DAY = 24 * 60 * 60 * 1000;
+
+    if (!lastSync || now - lastSync > ONE_DAY) {
+      console.log("🕓 syncing stats after login...");
+      stats
+        .syncAllSportsStats()
+        .then(() => stats.setLastSyncTime(db, now))
+        .catch((err: unknown) => console.error("❌ sync failed:", err));
+    } else {
+      console.log("✅ stats already up to date");
+    }
+
+    return frames;
+  },
+  then: actions([Requesting.respond, { message: "Sync complete" }]),
+});
 
 
 // delete account

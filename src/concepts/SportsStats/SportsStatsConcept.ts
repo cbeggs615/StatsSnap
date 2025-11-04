@@ -2,6 +2,13 @@ import { Collection, Db } from "npm:mongodb";
 import { Empty, ID } from "@utils/types.ts"; // Assuming these utilities are available as described
 import { freshID } from "@utils/database.ts"; // Assuming these utilities are available as described
 
+
+
+import { updateNBATeamStats } from "@integrations/nba/updateNBATeamStats.ts";
+import { updateNFLTeamStats } from "@integrations/nfl/updateNFLStats.ts";
+import { updateNHLTeamStats } from "@integrations/nhl/updateNHLStats.ts";
+import { updateMLBTeamStats } from "@integrations/mlb/updateMLBStats.ts";
+
 // Define collection prefix, using concept name
 const PREFIX = "SportsStats" + ".";
 
@@ -228,71 +235,6 @@ export default class SportsStatsConcept {
   }
 
 
-
-  // /**
-  //  * @action fetchTeamStats
-  //  * @requires TeamStat for this teamname and sport exists.
-  //  * @effects for each KeyStat in sport's KeyStats, fetches Data for this specific team from the concept's internal storage.
-  //  *          Returns a map of Stat IDs to their corresponding Data values.
-  //  *
-  //  * @note Design Implication: The provided concept specification for SportsStats does not include an explicit
-  //  *       action to *store* or *update* the actual statistical `Data` for teams. To adhere to the
-  //  *       "Completeness of functionality" principle, this implementation assumes that `SportsStats` itself
-  //  *       manages these values in an internal `statValues` collection. Without a public action to populate
-  //  *       this collection, `fetchTeamStats` will primarily return an empty map or only data previously
-  //  *       injected (e.g., via `syncs` calling an internal helper method like `_setStatValue` for testing).
-  //  *       This highlights a potential gap in the concept's provided action set if the intention was for
-  //  *       this concept to fully manage both definitions *and* values of statistics through its public API.
-  //  */
-  // async fetchTeamStats(
-  //   { teamname, sport }: { teamname: string; sport: ID },
-  // ): Promise<{ keyStatsData: Record<Stat, Data> } | { error: string }> {
-  //   // Precondition: Check if TeamStat for this teamname and sport exists
-  //   const teamStatsDoc = await this.teams.findOne({
-  //     name: teamname,
-  //     sport: sport,
-  //   });
-  //   if (!teamStatsDoc) {
-  //     return {
-  //       error:
-  //         `TeamStats for team '${teamname}' in sport '${sport}' does not exist.`,
-  //     };
-  //   }
-
-  //   // Retrieve the associated Sport document to get its key stats
-  //   const sportDoc = await this.sports.findOne({ _id: sport });
-  //   if (!sportDoc) {
-  //     // This case indicates an inconsistency (a team exists for a non-existent sport ID)
-  //     return {
-  //       error:
-  //         `Associated sport with ID '${sport}' not found, which is an internal inconsistency.`,
-  //     };
-  //   }
-
-  //   const keyStatsData: Record<Stat, Data> = {};
-  //   const teamStatId = teamStatsDoc._id;
-  //   const sportId = sportDoc._id;
-
-  //   // Fetch all relevant stat values from the internal `statValues` collection
-  //   const statValuesDocs = await this.statValues.find({
-  //     teamStatId: teamStatId,
-  //     sportId: sportId,
-  //     statId: { $in: sportDoc.keyStats }, // Filter only for key stats defined for this sport
-  //   }).toArray();
-
-  //   // Populate the result map with fetched data
-  //   for (const statId of sportDoc.keyStats) {
-  //     const valueDoc = statValuesDocs.find((doc) => doc.statId === statId);
-  //     if (valueDoc) {
-  //       keyStatsData[statId] = valueDoc.value;
-  //     }
-  //     // If a key stat has no corresponding value in `statValues`, it's simply omitted from the map.
-  //     // Depending on requirements, it could default to `null`, `0`, or `undefined`.
-  //   }
-
-  //   return { keyStatsData: keyStatsData };
-  // }
-
     /**
    * @action fetchTeamStats
    * @requires TeamStat for this teamname and sport exists.
@@ -464,5 +406,52 @@ async _getSportsList(): Promise<
     }).toArray();
     const statIds = statDocs.map((doc) => doc.statId);
     return { stats: statIds };
+  }
+
+
+  /**
+   * syncAllSportsStats()
+   * Fetches and updates data for all sports from external APIs.
+   * Can be called on startup, daily, or upon user login.
+   */
+  async syncAllSportsStats(): Promise<{ success: boolean; errors?: string[] }> {
+    console.log("🔄 Starting sports stats sync...");
+
+    const tasks = [
+      { name: "NBA", fn: updateNBATeamStats },
+      { name: "NFL", fn: updateNFLTeamStats },
+      { name: "NHL", fn: updateNHLTeamStats },
+      { name: "MLB", fn: updateMLBTeamStats },
+    ];
+
+    const errors: string[] = [];
+    for (const { name, fn } of tasks) {
+      try {
+        console.log(`📡 Updating ${name} stats...`);
+        await fn();
+      } catch (err) {
+        console.error(`❌ ${name} update failed:`, err);
+        errors.push(name);
+      }
+    }
+
+    console.log("✅ Sports stats sync complete");
+    return { success: errors.length === 0, errors };
+  }
+
+
+  async getLastSyncTime(db: Db): Promise<number | undefined> {
+    const meta = await db.collection("Meta").findOne<{ key: string; value: number }>({
+      key: "lastStatsSync",
+    });
+    return meta?.value;
+  }
+
+  async setLastSyncTime(db: Db, timestamp: number): Promise<void> {
+    await db.collection("Meta").updateOne(
+      { key: "lastStatsSync" },
+      { $set: { value: timestamp } },
+      { upsert: true }
+    );
   }
 }

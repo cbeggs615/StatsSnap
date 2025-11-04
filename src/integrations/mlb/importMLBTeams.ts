@@ -1,6 +1,6 @@
 // src/integrations/mlb/importMLBTeams.ts
 import SportsStatsConcept from "@concepts/SportsStats/SportsStatsConcept.ts";
-import { fetchMLBTeams } from "./fetchMLBTeams.ts";
+import { fetchMLBTeams } from "@integrations/mlb/fetchMLBTeams.ts";
 import { getDb } from "@utils/database.ts";
 import { ID } from "@utils/types.ts";
 import { MongoClient } from "npm:mongodb";

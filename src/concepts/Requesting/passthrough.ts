@@ -48,7 +48,9 @@ export const inclusions: Record<string, string> = {
  */
 
 export const exclusions: Array<string> = [
-
+  "/api/SportsStats/syncAllSportsStats",
+  "/api/SportsStats/getLastSyncTime",
+  "/api/SportsStats/setLastSyncTime",
 
   // checking passwords/finding useres should be excluded
   "/api/PasswordAuth/_checkPassword",
