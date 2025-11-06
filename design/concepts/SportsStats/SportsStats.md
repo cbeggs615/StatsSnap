@@ -1,3 +1,4 @@
+# concept: SportsStats
 **concept** SportsStats[Source, Stat, Data]
 
 **purpose**
@@ -22,6 +23,8 @@ each sport provides a set of *default* stat types relevant to it; teams belongin
   - a sportId Sport
   - a statId Stat
   - a value Data
+
+- a **lastSyncTime** Time
 
 
 **actions**
@@ -56,6 +59,20 @@ each sport provides a set of *default* stat types relevant to it; teams belongin
   - **requires** a TeamStats entry for the given teamname and sport exists
   - **effects** creates or updates a StatValue entry for that team, sport, and statId
 
+- **system syncAllSportsStats**():
+  **requires** external APIs for each sport (NFL, NHL, MLB, NBA) are reachable and teams for each sport are in state
+  **effects**
+    - fetches and updates StatValues for all sports and teams from external APIs
+    - updates `lastSyncTime` to the current system timestamp upon successful completion
+
+- **system getLastSyncTime**(): (timestamp: Time)
+  **effects** returns the last recorded synchronization time for the sports statistics database
+
+- **system setLastSyncTime**(timestamp: Time): ()
+  **requires** timestamp is a valid time
+  **effects** updates or creates the `lastSyncTime` record with the provided timestamp
+
+
 ---
 
 **notes**
@@ -63,3 +80,6 @@ each sport provides a set of *default* stat types relevant to it; teams belongin
 - statistical data (`StatValues`) is managed internally but populated through external syncs (e.g., from an API identified by the Sport’s `source`).
 - default Stats act as a baseline view for fetching, but the concept remains open to dynamic tracking of additional stats per team
 - no actions mutate a Sport’s `defaultStats` after creation — defaults serve as static metadata for display and inheritance purposes.
+- `syncAllSportsStats` is a system-level maintenance action called automatically at startup, on login, or on a daily schedule (decided by user of concept).
+- The `lastSyncTime` field enables freshness checks to prevent redundant syncs (e.g., skip if data was updated within the last 24 hours).
+- This design ensures all data updates occur through verified and consistent syncs, while read operations remain safe and isolated.
