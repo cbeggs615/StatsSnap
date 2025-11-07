@@ -54,7 +54,6 @@ export const RemoveItemRequest: Sync = ({ request, session, item, user }) => ({
     { request },
   ]),
   where: (frames) => {
-    console.log("🧩 running _getUser for session", session);
     return frames.query(Sessioning._getUser, { session }, { user });
   },
   then: actions([

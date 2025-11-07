@@ -80,7 +80,7 @@ export default class SessioningConcept {
     if (!sessionDoc) {
       return [{ error: `Session with id ${session} not found` }];
     }
-    console.log("[Sessioning] _getUser:", session, "→", sessionDoc);
+    // console.log("[Sessioning] _getUser:", session, "→", sessionDoc);
     return [{ user: sessionDoc.user }];
   }
 }
