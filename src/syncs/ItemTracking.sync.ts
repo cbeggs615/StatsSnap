@@ -102,14 +102,19 @@ export const GetItemsTrackedByUserRequest: Sync = (
     frames = await frames.query(Sessioning._getUser, { session }, { user });
 
     // Step 2️⃣: Query all items tracked by that user
-    frames = await frames.query(ItemTracking._getItemsTrackedByUser, { user }, { item });
+    const queried = await frames.query(ItemTracking._getItemsTrackedByUser, { user }, { item });
 
-    if (frames.length === 0) {
-        console.log("⚠️ No tracked items found — injecting empty frame so collectAs works");
-        frames.push({ [item]: null }); // add a dummy frame binding
+    if (queried.length === 0) {
+      console.log("⚠️ No tracked items found — injecting empty result so collectAs works");
+      // Reuse the existing frames object (which already carries [Symbol(action_0)] etc.)
+      for (const f of frames) {
+        (f as any)[item] = null;
+      }
+    } else {
+      frames = queried;
     }
 
-    const collected = frames.collectAs ? frames.collectAs([user, item], results) : frames;
+    const collected = frames.collectAs([user, item], results);
     return collected;
   },
 
