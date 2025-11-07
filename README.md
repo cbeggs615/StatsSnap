@@ -3,6 +3,6 @@
 
 [Reflections Document](final_reflections.md)
 
-[User Video]()
+[User Video](uservideo.mov)
 
-[User Video Trace]()
+[User Video Trace](stack_trace.md)
