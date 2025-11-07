@@ -2,7 +2,7 @@ FROM denoland/deno:2.5.5
 
 # Install Python - needed for NBA update
 USER root
-RUN apt-get update && apt-get install -y python3 python3-pip && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y python3 python3-pip build-essential libffi-dev && rm -rf /var/lib/apt/lists/*
 RUN pip3 install --no-cache-dir pandas nba_api
 
 # It's good practice to specify the user. Deno's image provides a non-root 'deno' user.
