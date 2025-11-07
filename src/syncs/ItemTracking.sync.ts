@@ -111,8 +111,6 @@ export const GetItemsTrackedByUserRequest: Sync = (
     }
 
     const collected = frames.collectAs ? frames.collectAs([user, item], results) : frames;
-    console.log("✅ after collectAs →", collected?.length || "no frames");
-
     return collected;
   },
 
